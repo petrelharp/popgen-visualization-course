@@ -1,0 +1,55 @@
+<h1 id="visualizing-geographic-structure-and-demographic-history">Visualizing geographic structure and demographic history</h1>
+<p><em>Goals/skills:</em> 1. Describe different causes and patterns of population structure. 2. Use principal components analysis (PCA) to visualize population structure. 3. Use BEDASSLE to fit models of isolation by distance and/or environment.</p>
+<p><em>Incidental skills:</em> 1. Interpreting the output of a Markov chain Monte Carlo (MCMC) algorithm.</p>
+<p><em>Prerequisites:</em> 1. Install <a href="http://www.r-project.org/">R</a> 2. and the R package <a href="http://cran.r-project.org/web/packages/BEDASSLE/index.html">BEDASSLE</a>: <code>{r} install.packages(&quot;BEDASSLE&quot;)</code></p>
+<h2 id="outline">Outline</h2>
+<ol style="list-style-type: decimal">
+<li>PCA and visualization</li>
+<li>Goal: low-dimensional summary.</li>
+<li>In practice: examples from the literature</li>
+<li>Words about PCA
+<ol style="list-style-type: decimal">
+<li>direction of maximum variation: weights on alleles</li>
+<li>decomposition of variance</li>
+<li>matrix decompositions</li>
+<li>spatial structure and Fourier modes</li>
+</ol></li>
+<li>Technical issues
+<ol style="list-style-type: decimal">
+<li>normalization</li>
+<li>weighting and sample sizes</li>
+<li>correlated markers</li>
+</ol></li>
+<li>Doing PCA: hands-on</li>
+<li>Three populations, simulated
+<ol style="list-style-type: decimal">
+<li>computing the covariance matrix</li>
+<li>PCA</li>
+</ol></li>
+<li>POPRES (as in <a href="" title="Genes mirror geography">http://www.ncbi.nlm.nih.gov/pubmed/18758442</a>)
+<ol style="list-style-type: decimal">
+<li>covariance matrix provided</li>
+<li>downweighting populations</li>
+<li>subsets of the genome</li>
+</ol></li>
+<li>Continuous geography</li>
+<li>Nearby things are more similar than distant ones
+<ol style="list-style-type: decimal">
+<li>... because they are more closely related.</li>
+<li>Migration, coalescence, covariance, and genetic distance.</li>
+</ol></li>
+<li>Isolation by distance/environment/ecology/etcetera
+<ol style="list-style-type: decimal">
+<li>resistance distance</li>
+</ol></li>
+<li><p>Phenomenological model: correlated allele frequencies</p></li>
+<li>Using BEDASSLE</li>
+<li>BEDASSLE's parameterization</li>
+<li>Lightning introduction to MCMC
+<ol style="list-style-type: decimal">
+<li>acceptance rates</li>
+<li>likelihood profile</li>
+<li>mixing and stationarity</li>
+</ol></li>
+<li><p>Simulated data</p></li>
+</ol>
