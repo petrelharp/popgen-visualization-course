@@ -307,11 +307,12 @@ a tendency counteracted by migration.
 [Wang & Bradburd](http://onlinelibrary.wiley.com/doi/10.1111/mec.12938/abstract)
 
 
-## Motivating example
+## Motivating example {.columns-2}
 
-<img src="whitesands-transition.png" style="width: 45%"/>
-<img src="whitesands-lizards.png" style="width: 45%"/>
+<img src="whitesands-transition.png" style="width: 100%"/>
+<img src="whitesands-lizards.png" style="width: 100%"/>
 [*Des Roches et al 2013*](http://onlinelibrary.wiley.com/doi/10.1111/bij.12165/full)
+<img src="whitesands-aerial.png" style="width: 100%"/>
 
 
 ## Phenomenological model: correlated allele frequencies
