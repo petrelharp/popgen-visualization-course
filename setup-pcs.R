@@ -107,12 +107,13 @@ write.csv(iprod/nshared,file="crossprod_even.csv",row.names=TRUE)
 
 # covariances
 # for (chrom in chroms) {
+chroms <- 1:22
 mclapply( chroms, function (chrom) {
         cat("chrom ", chrom, "\n")
         filename <- paste("POPRES_chr",chrom,"_pruned.raw",sep="")
         outbase <- paste("crossprod_chr",chrom,sep="")
         genotypes <- read.table(filename,header=TRUE)
-        genotypes <- genotypes[match(indivinfo$SUBJID,indivs$IID),]
+        genotypes <- genotypes[match(indivinfo$SUBJID,genotypes$IID),]
         indivs <- genotypes[,1:6]
         genotypes <- as.matrix( genotypes[7:ncol(genotypes)] )
         covmat <- cov(t(genotypes),use="pairwise")
@@ -124,26 +125,37 @@ mclapply( chroms, function (chrom) {
 
 cname <- function (chrom) { 
     outbase <- paste("crossprod_chr",chrom,sep="")
-    paste(outbase,"-covariance.csv",sep='')
+    c( paste(outbase,"-covariance.csv",sep=''),
+        nbase=paste(outbase,"-nonmissing.csv",sep='') )
 } 
 
 chrom <- 1
-covmat <- read.csv(cname(chrom),row.names=1,check.names=FALSE)
+nshared <- read.csv(cname(chrom)[2],row.names=1,check.names=FALSE)
+covmat <- nshared*read.csv(cname(chrom)[1],row.names=1,check.names=FALSE)
 for ( chrom in setdiff(chroms,1) ) {
     cat("chrom ", chrom, "\n")
-    covmat <- covmat + read.csv(cname(chrom),row.names=1,check.names=FALSE)
+    new.nshared <- read.csv(cname(chrom)[2],row.names=1,check.names=FALSE)
+    nshared <- nshared + new.nshared
+    covmat <- covmat + new.nshared*read.csv(cname(chrom)[1],row.names=1,check.names=FALSE)
 }
-covmat <- covmat/length(chroms)
+covmat <- covmat/nshared
 write.csv(covmat,file="crossprod_all-covariance.csv",row.names=TRUE)
 
+
+#######
 # relabel data for class
+indivinfo <- read.csv("orig_data/indivinfo.csv",header=TRUE,stringsAsFactors=FALSE)
 indivinfo$ORIG_ID <- indivinfo$SUBJID
 indivinfo$SUBJID <- sample(1:nrow(indivinfo))
 write.table(indivinfo[,1:2],file="indivinfo.tsv",sep="\t",row.names=FALSE)
 cprod <- as.matrix(read.csv("orig_data/crossprod_all.csv",row.names=1,check.names=FALSE))
 rownames(cprod) <- colnames(cprod) <- indivinfo$SUBJID[match(indivinfo$ORIG_ID,rownames(cprod))]
-write.table(cprod,file="crossprod_all.csv",sep="\t",row.names=TRUE)
+write.table(cprod,file="crossprod_all.tsv",sep="\t",row.names=TRUE)
 
 cprod <- as.matrix(read.csv("orig_data/crossprod_chr8-inner_prod.csv",row.names=1,check.names=FALSE)) / as.matrix(read.csv("orig_data/crossprod_chr8-nonmissing.csv",row.names=1,check.names=FALSE))
 rownames(cprod) <- colnames(cprod) <- indivinfo$SUBJID[match(indivinfo$ORIG_ID,rownames(cprod))]
-write.table(cprod,file="crossprod_chr8.csv",sep="\t",row.names=TRUE)
+write.table(cprod,file="crossprod_chr8.tsv",sep="\t",row.names=TRUE)
+
+cprod <- as.matrix(read.csv("orig_data/crossprod_all-covariance.csv",row.names=1,check.names=FALSE))
+rownames(cprod) <- colnames(cprod) <- indivinfo$SUBJID[match(indivinfo$ORIG_ID,rownames(cprod))]
+write.table(cprod,file="crossprod_all-covariance.tsv",sep="\t",row.names=TRUE)

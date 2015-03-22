@@ -4,11 +4,22 @@ author: Peter Ralph
 date: March 25, 2015
 output: 
     ioslides_presentation : 
-        selfcontained : true
+        self_contained : true
         smaller : true
         transition : faster
 
 ---
+
+<style>
+.footer {
+    color: black;
+    background: #E8E8E8;
+    position: fixed;
+    top: 90%;
+    text-align:center;
+    width:100%;
+}
+</style>
 
 ```{r setup, include=FALSE}
 source("sim-data-fns.R")
@@ -30,32 +41,47 @@ How to look at millions of loci (/variables/dimensions)?
 (*keyword*: "dimensionality reduction")
 
 
-##
+1. examples from the literature
+2. how to do it: overview
+3. properties of PCA
+4. how to do it: hands-on
 
+##
 *Genes mirror geography within Europe*, Novembre et al 2008
-<a href="http://www.nature.com/nature/journal/v456/n7218/full/nature07331.html"><img src="genes-mirror-geography.jpg" style="width: 100%"></a>
-
-## 
-
-Genome-wide patterns of genetic variation in worldwide Arabidopsis thaliana accessions from the RegMap panel, Horton et al 2012
-<a href="http://www.nature.com/ng/journal/v44/n2/full/ng.1042.html"><img src="arabidopsis-pca.jpg" style="width: 150%"></a>
+<a href="http://www.nature.com/nature/journal/v456/n7218/full/nature07331.html"><img src="genes-mirror-geography.jpg" style="width: 80%"></a>
 
 ##
+*New insights into the Tyrolean Iceman's origin and phenotype as inferred by whole-genome sequencing*, Keller et al 2011
+<a href="http://www.nature.com/ncomms/journal/v3/n2/full/ncomms1701.html"><img src="iceman-pca.png" style="width: 100%"></a>
 
+##
 *Genomic divergence in a ring species complex*, Alcaide et al 2014
 <a href="http://www.nature.com/nature/journal/v511/n7507/full/nature13285.html"><img src="greenish-warbler-pca.jpg" style="width: 100%"></a>
 
-## How to do it
+<!--
+
+## 
+*Origins and Genetic Legacy of Neolithic Farmers and Hunter-Gatherers in Europe*,  Skoglund et al 2012
+<a href="http://www.sciencemag.org/content/336/6080/466.long"><img src="skoglund-pca.png" style="width: 100%"></a>
+
+## 
+Genome-wide patterns of genetic variation in worldwide Arabidopsis thaliana accessions from the RegMap panel, Horton et al 2012
+<a href="http://www.nature.com/ng/journal/v44/n2/full/ng.1042.html"><img src="arabidopsis-pca_A.png" style="width: 45%"></a>
+<a href="http://www.nature.com/ng/journal/v44/n2/full/ng.1042.html"><img src="arabidopsis-pca_C.png" style="width: 45%"></a>
+-->
+
+
+## Anatomy of PCA
 
 Your data:
 
-```{r sim_data, echo=FALSE}
+```{r sim_small_data, echo=FALSE}
 simdata <- sim_data(nind=5,nloci=12)
 pander(t(simdata$alleles))
 ```
 
 
-## First step: change letters to numbers.
+## First: change letters to numbers.
 
 Translate alleles to "number of reference alleles":
 
@@ -63,47 +89,234 @@ Translate alleles to "number of reference alleles":
 pander(t(simdata$genotypes))
 ```
 
-*note:* the choice of "reference" allele won't matter.
+*note:* arbitrary choice of "reference" allele.
 
-## Words about PCA
 
-        -   direction of maximum variation: weights on alleles
-        -   decomposition of variance
-        -   matrix decompositions
-        -   spatial structure and Fourier modes
+## Second: compute a similarity matrix
+
+Default choice:
+
+0.  Trim tightly linked loci (e.g. with [plink](http://pngu.mgh.harvard.edu/~purcell/plink/))
+
+    - avoid influence of large linked blocks
+
+1.  Subtract locus means ($2 \times{}$ allele frequencies)
+
+    - makes result independent of reference allele choices
+
+2.  Estimate covariance between individuals
+
+    - methods available for missing data
+
+
+## Second: compute a similarity matrix
+
+```{r covmat, echo=FALSE}
+covmat <- crossprod(sweep(simdata$genotypes,1,rowMeans(simdata$genotypes),"-"))
+pander(covmat)
+```
+
+
+## Third: eigendecomposition
+
+```{r eigen_ex, echo=1}
+pca <- eigen(covmat)
+names(pca$values) <- colnames(pca$vectors) <- paste("PC",1:ncol(pca$vectors),sep="")
+rownames(pca$vectors) <- rownames(covmat)
+```
+
+Eigenvalues:
+
+ :  proportion of variance explained
+
+```{r eigen_ex_values, echo=TRUE}
+pca$values/sum(pca$values)
+```
+
+
+Eigenvectors:
+
+ :  the positions of the samples on the **principal components**
+
+```{r eigen_ex_vectors, echo=TRUE}
+pca$vectors
+```
+
+## Fourth: making pretty pictures
+
+The eigenvectors are the *coordinates* of the samples on the *principal components*:
+so just plot them against each other:
+
+```{r eigen_ex_plot, echo=TRUE}
+pairs( pca$vectors[,1:3] )
+```
+
+
+## Questions to which PCA gives the answer:
+
+(@)   direction of maximum variation: weights on alleles
+(@)   decomposition of variance
+(@)   matrix decompositions
+(@)   spatial structure and Fourier modes
+
+"axes that explain most of the variance"
 
 ## Technical issues
 
-        -   normalization
-        -   weighting and sample sizes
-        -   correlated markers
+**Normalization:** 
+
+ :  you can choose to upweight low frequency alleles (e.g. divide by $1/\sqrt{p(1-p)}$);
+    this may or may not make a difference.
+
+**Sample sizes:** 
+
+ :  if the sampling scheme is unbalanced, the top PCs may choose to explain the variance *within* the most heavily sampled population,
+    rather than variation between populations. 
+
+    *Solution:* downweight by sample size.
+
+**Linkage:** 
+
+ :  large linkage blocks (e.g. inversions) can hijack the top PCs.
+
+    *Solution:* prune linked SNPs.
+
+
+
+# Doing PCA: demonstrated
+
+## Simulated data:
+
+```{r sim_data, cache=TRUE}
+nind <- 1000
+nloci <- 1e4
+simdata <- sim_data(nind=nind,nloci=nloci)
+cols <- rainbow(nind)[rank(simdata$locs[,1])]
+pchs <- as.numeric(cut(simdata$locs[,2],breaks=12))
+plot( simdata$locs, col=cols, pch=pchs, main="sampling scheme" )
+```
+
+## PCA on simulated data:
+
+```{r sim_pca, cache=TRUE, depends="sim_data"}
+norm.genotypes <- sweep( simdata$genotypes, 1, rowMeans(simdata$genotypes), "-" )
+covmat <- cov(norm.genotypes)
+pca <- eigen(covmat)
+plot(pca$values/sum(pca$values),ylab="proportion", main="proportion of variance explained", xlab="PC#")
+```
+
+## PCA map:
+
+```{r plot_sim_pca_map}
+layout(t(1:2))
+plot(simdata$locs, col=cols, pch=pchs, main="locations" )
+plot(pca$vectors[,1:2], col=cols, pch=pchs, main="PC map", xlab="PC1", ylab="PC2" )
+```
+
+## More PCs:
+
+```{r plot_sim_pca}
+pairs(pca$vectors[,1:5], col=cols, pch=pchs )
+```
+
+## PCs on the map:
+
+The PCs here are Fourier modes; so the PC plots are like [Lissajous figures](http://en.wikipedia.org/wiki/Lissajous_curve)
+(discussion in [Novembre & Stephens](http://www.nature.com/ng/journal/v40/n5/abs/ng.139.html)).
+
+```{r plot_map_pca, echo=FALSE}
+layout(matrix(1:9,nrow=3))
+par(mar=c(2,2,3,1)+.1)
+for (k in 1:9) {
+    plot( simdata$locs, col=heat.colors(64)[cut(pca$vectors[,k],breaks=64)], main=paste("PC",k,sep='') )
+}
+```
+
 
 # Doing PCA: hands-on
 
-## Three populations, simulated
 
-        -   computing the covariance matrix
-        -   PCA
+## Your turn: the POPRES
 
-## POPRES (as in http://www.ncbi.nlm.nih.gov/pubmed/18758442)
+Same data as in [Genes mirror geography within Europe](http://www.nature.com/nature/journal/v456/n7218/full/nature07331.html),
+but without subsetting:
 
-        -   covariance matrix provided
-        -   downweighting populations
-        -   subsets of the genome
+- `popres/crossprod_all-covariance.tsv` : covariance matrix *without* subtracting allele means
+- `popres/crossprod_chr8-covariance.tsv` : covariance matrix *without* subtracting allele means
+- `popres/indivinfo.tsv` : sample information
+- `source(popres/indivinfo.R)` : for country abbreviations and colors
+
+Your tasks:
+
+1.  Renormalize the covariance matrix.
+2.  Find the eigendecomposition.
+3.  What proportion of variance is explained by each PC?
+4.  Plot the first two PCs against each other.
+5.  Subsample to obtain more even sampling.
 
 
 # Continuous geography
 
-## Nearby things are more similar than distant ones
+## Not all populations look like this
 
-        -   ... because they are more closely related.
-        -   Migration, coalescence, covariance, and genetic distance.
+<a href="http://en.wikipedia.org/wiki/Macquarie_Island"><img src="macquarie-island-royal-penguins.jpg" style="width: 100%;"/></a>
+<!-- ![Macquarie Island, Royal Penguins](macquarie-island-royal-penguins.jpg) -->
+[*wikipedia:M. Murphy*](http://en.wikipedia.org/wiki/Macquarie_Island#/media/File:RoyalPenguins4.JPG)
+
+
+## Continuous space
+
+> Everything is related to everything else, but near things are more related than distant things. 
+
+*Waldo Tobler, 1970*
+
+**Why?**  
+Offspring tend to live near to their parents, and so neighbors tend to 
+
+-  be more closely related,
+-  i.e. have fewer generations separting them from their common ancestors,
+-  i.e. have more similar genomes.
+
+
+## "Isolation by distance" | correlation of genetic and geographic distances
+
+
+From a *population* viewpoint, local drift differentiates populations,
+while migration makes nearby ones more similar.
+
+From the *individual* viewpoint, 
+lower population sizes means more recent, nearby shared ancestors;
+a tendency counteracted by migration.
+
+
+## Isolation by distance
+
+<img src="gideons-ibde-plot-1.png" style="width: 100%"/>
+<!-- ![isolation by distance](gideons-ibde-plot-1.png) -->
+
+## Isolation by distance, environment
+
+<img src="gideons-ibde-plot-2.png" style="width: 100%"/>
+<!-- ![isolation by distance and environment](gideons-ibde-plot-2.png) -->
+
 
 ## Isolation by distance/environment/ecology/etcetera
 
-        -   resistance distance
+<img src="wang-bradburd-ibde.png" style="width: 100%"/>
+<!-- ![Wang & Bradburd 2014](wang-bradburd-ibde.png) -->
+[Wang & Bradburd](http://onlinelibrary.wiley.com/doi/10.1111/mec.12938/abstract)
+
+
+## Motivating example
+
+<img src="whitesands-transition.png" style="width: 45%"/>
+<img src="whitesands-lizards.png" style="width: 45%"/>
+[*Des Roches et al 2013*](http://onlinelibrary.wiley.com/doi/10.1111/bij.12165/full)
+
 
 ## Phenomenological model: correlated allele frequencies
+
+
 
 # Using BEDASSLE
 
@@ -111,9 +324,41 @@ pander(t(simdata$genotypes))
 
 ## Lightning introduction to MCMC
 
-        -   acceptance rates
-        -   likelihood profile
-        -   mixing and stationarity
+    -   acceptance rates
+    -   likelihood profile
+    -   mixing and stationarity
 
 ## Simulated data
+
+
+
+## Summary and wrap-up
+
+**PCA:**
+
+1.  Great for quick visualization,
+2.  but beware of over-interpretation,
+3.  as minor details are not stable, and major details might not be either.
+
+
+# Technical appendices
+
+## Trim linked SNPs and recode as numeric
+
+Using [plink](http://pngu.mgh.harvard.edu/~purcell/plink/):
+
+```
+# Trim down to pairwise r2 no more than 0.25:
+plink --file $INFILE --indep-pairwise 50 5 0.25 --out $INFILE_prunesnps
+# Turn result to numeric matrix
+plink --file $INFILE --extract $INFILE_prunesnps.prune.in --recodeA --out $INFILE_pruned
+```
+
+## Estimate covariance matrix with R
+
+In the presence of missing data:
+
+```{r example, eval=FALSE}
+cov(genotypes,use="pairwise.complete.obs")
+```
 

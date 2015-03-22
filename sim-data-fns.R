@@ -4,7 +4,7 @@ sim_data <- function (nind, nloci) {
     indivs <- paste("I",1:nind,sep="")
     snps <- paste("SNP",1:nloci,sep="")
     locs <- cbind( lat=runif(nind), lon=runif(nind) )
-    distmat <- sqrt( outer( locs[,1], locs[,1], "-" )^2 + outer( locs[,1], locs[,1], "-" )^2 )
+    distmat <- sqrt( outer( locs[,1], locs[,1], "-" )^2 + outer( locs[,2], locs[,2], "-" )^2 )
     nugget <- 0.2
     covmat <- exp(-distmat*2) + nugget * diag(nind)
     untf.freqs <- matrix( rnorm(nind*nloci), nrow=nloci ) %*% chol(covmat)

@@ -24,10 +24,10 @@ install.packages("BEDASSLE")
 Outline
 -------
 
-1.   PCA and visualization
+1.   PCA and visualization (45min)
     -   Goal: low-dimensional summary.
     -   In practice: examples from the literature
-    -   Words about PCA
+    -   Properties of PCA
         -   direction of maximum variation: weights on alleles
         -   decomposition of variance
         -   matrix decompositions
@@ -36,7 +36,7 @@ Outline
         -   normalization
         -   weighting and sample sizes
         -   correlated markers
-2.   Doing PCA: hands-on
+2.   Doing PCA: hands-on (45min)
     -   Three populations, simulated
         -   computing the covariance matrix
         -   PCA
@@ -44,14 +44,14 @@ Outline
         -   covariance matrix provided
         -   downweighting populations
         -   subsets of the genome
-3.   Continuous geography
+3.   Continuous geography (45min)
     -   Nearby things are more similar than distant ones
         -   ... because they are more closely related.
         -   Migration, coalescence, covariance, and genetic distance.
     -   Isolation by distance/environment/ecology/etcetera
         -   resistance distance
     -   Phenomenological model: correlated allele frequencies
-4.   Using BEDASSLE
+4.   Using BEDASSLE (45min)
     -   BEDASSLE's parameterization
     -   Lightning introduction to MCMC
         -   acceptance rates
