@@ -259,7 +259,7 @@ Your tasks:
 
 ## Not all populations look like this
 
-<a href="http://en.wikipedia.org/wiki/Macquarie_Island"><img src="macquarie-island-royal-penguins.jpg" style="width: 100%;"/></a>
+<a href="http://en.wikipedia.org/wiki/Macquarie_Island"><img src="macquarie-island-royal-penguins.jpg" style="width: 90%;"/></a>
 <!-- ![Macquarie Island, Royal Penguins](macquarie-island-royal-penguins.jpg) -->
 [*wikipedia:M. Murphy*](http://en.wikipedia.org/wiki/Macquarie_Island#/media/File:RoyalPenguins4.JPG)
 
@@ -276,6 +276,8 @@ Offspring tend to live near to their parents, and so neighbors tend to
 -  be more closely related,
 -  i.e. have fewer generations separting them from their common ancestors,
 -  i.e. have more similar genomes.
+
+<img src="tort-sampling-locations.png" style="width: 60%;" alt="tortoise sampling locations" />
 
 
 ## "Isolation by distance" | correlation of genetic and geographic distances
@@ -300,7 +302,7 @@ a tendency counteracted by migration.
 <!-- ![isolation by distance and environment](gideons-ibde-plot-2.png) -->
 
 
-## Isolation by distance/environment/ecology/etcetera
+## Isolation by *
 
 <img src="wang-bradburd-ibde.png" style="width: 100%"/>
 <!-- ![Wang & Bradburd 2014](wang-bradburd-ibde.png) -->
@@ -317,11 +319,80 @@ a tendency counteracted by migration.
 
 ## Phenomenological model: correlated allele frequencies
 
+## Cartoon model
+
+-  Sample some alleles at two locations, $x$ and $y$,
+-  which descend from some ancestors a long time ago.
+-  Each ancestor's genotype was chosen independently, with frequency $f$;
+-  samples sharing the same ancestor have the same allele;
+-  so the modern frequency is near $f$, but has drifted.
+-  Nearby samples are more likely to share a recent common ancestor,
+-  so the allele frequencies at $x$ and $y$ are *correlated*
+-  with a strength that depends on their distance apart.
+
+
+## Gestalt model
+
+-  The *allele frequency* at locus $\ell$ in population $k$ is
+    $$f_{\ell k} = \text{( global mean )} + \text{( spatially autocorrelated noise )}$$
+
+-  and it would be nice if the noise was Gaussian.
+
+-  The sampled alleles are independent${}^*$ draws from these frequencies.
+
+**But:** need to trasnform from $(-\infty,\infty)$ (Gaussians) to $[0,1]$ (frequencies).
+
+
+${}^*$ *actually, Beta-Binomial, to allow for population-specific inbreeding coefficients.*
+
+
+
+## Mathematical model
+
+-  The *allele frequency* at locus $\ell$ in population $k$ is
+    $$f_{\ell k} = \frac{1}{1+e^{-(\Theta_{\ell k}+\mu_\ell)}}$$
+
+-  where $\mu_\ell$ is the (transformed) global mean allele frequency
+
+-  and $\Theta$ are multivariate Gaussian deviations
+   $$\Theta_{\ell k} \sim N(0,\Omega)$$
+
+-  with covariance matrix $\Omega_{}$.
 
 
 # Using BEDASSLE
 
-## BEDASSLE's parameterization
+## BEDASSLE's model
+
+With 
+$$ D_{i,j} = \text{(geographic distance between samples $i$ and $j$)} $$
+and
+$$ E_{i,j} = \text{(environmental distance between samples $i$ and $j$)} $$
+
+we use the flexible parametric form
+$$ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 })^\alpha_2 } .$$
+
+
+## and call it
+
+<div style="font-size: 200%;">
+    <span style="color:black; font-weight:bold;">B</span>ayesian <br/>
+    <span style="color:red; font-weight:bold;">E</span>stimation of  <br/>
+    <span style="color:orange; font-weight:bold;">D</span>ifferentiation in <br/>
+    <span style="color:yellow; font-weight:bold;">A</span>lleles by <br/>
+    <span style="color:green; font-weight:bold;">S</span>patial <br/>
+    <span style="color:blue; font-weight:bold;">S</span>tructure and <br/>
+    <span style="color:violet; font-weight:bold;">L</span>ocal <br/>
+    <span style="color:black; font-weight:bold;">E</span>cology
+</div>
+
+[Bradburd, Ralph & Coop 2013, *Evolution*](onlinelibrary.wiley.com/doi/10.1111/evo.12193)
+
+## a.k.a.
+
+<a href="http://genescape.ucdavis.edu/scripts-and-code/bedassle/">
+<img src="bedassle-logo.png" style="width: 90%; align: center;"/>
+</a>
 
 ## Lightning introduction to MCMC
 
@@ -331,6 +402,86 @@ a tendency counteracted by migration.
 
 ## Simulated data
 
+```{r sim_ibde_data, echo=1:4, cache=TRUE}
+nind <- 50; nloci <- 1000
+locs <- data.frame( lat=runif(nind), lon=runif(nind) )
+env <- ifelse( locs$lat>0.5, 1, 0 )
+sim <- sim_data(nind=nind,nloci=nloci,locs=locs,env=env,aE=2)
+layout(matrix(1:6,nrow=2))
+par(mar=c(2,2,2,1)+.1)
+plot(locs, col=1+env, pch=20, main='locations')
+for (k in sample.int(nloci,5)) {
+    plot( locs, col=c("blue","purple","red")[1+sim$genotypes[k,]], pch=20, main=paste("locus",k) )
+}
+```
+
+## Simulated data: IBDE
+
+```{r show_ibde, echo=1:7}
+covmat <- cov(sweep(sim$genotypes,1,rowMeans(sim$genotypes),"-"))
+D <- sqrt( outer( sim$locs[,1], sim$locs[,1], "-" )^2 + outer( sim$locs[,2], sim$locs[,2], "-" )^2 )
+E <- abs( outer( sim$env, sim$env, "-" ) )
+genetic.dist <- matrix(NA,nrow=nind,ncol=nind)
+for (i in 1:nind) for (j in i:nind) {
+    genetic.dist[i,j] <- genetic.dist[j,i] <- sqrt(mean((sim$genotypes[,i]-sim$genotypes[,j])^2))
+}
+cols <- rainbow(16,start=4/6,end=0)
+ut <- upper.tri(D)
+ecols <- adjustcolor(cols,.5)[cut(E[ut],breaks=16)]
+layout(t(1:2))
+plot( D[ut], covmat[ut], col=ecols, main="covariance", pch=20, ylab='' )
+plot( D[ut], genetic.dist[ut], col=ecols, main="genetic distance", pch=20, ylab='' )
+```
+
+## PCA on IBDE
+
+```{r pca_on_ibde, echo=-1}
+labels <- order(order(cut(locs[,1],breaks=5),(locs[,2])))
+tplot <- function (xy,col=1,...) { plot(xy,type='n',...); text(xy,labels=labels,col=col) }
+pca <- eigen(covmat)
+
+layout(t(1:2))
+tplot( locs, main="location", col=1+E )
+tplot( pca$vectors[,1:2], xlab="PC1", ylab="PC2", main="PC map", col=1+E )
+```
+
+## PCA on IBDE
+
+```{r pca_on_ibde_maps, echo=-1}
+layout(t(1:2))
+tplot( locs, col=cols[cut(pca$vectors[,1],16)], pch=20, main="PC1" ); abline(v=0.5)
+tplot( locs, col=cols[cut(pca$vectors[,2],16)], pch=20, main="PC2" ); abline(v=0.5)
+```
+
+
+
+
+# Running BEDASSLE
+
+```{r bedassle_run, cache=TRUE, depends="sim_ibde_data"}
+	require(BEDASSLE)
+	
+	#Initiate the MCMC analysis
+	MCMC_run <- MCMC(	
+            counts = t(sim$genotypes),
+			sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+			D = D,  # geographic distances
+            E = E,  # environmental distances
+			k = nind, loci = nloci,  # dimensions of the data
+			delta = 0.0001,  # a small, positive, number
+			aD_stp = 0.01,   # step sizes for the MCMC
+			aE_stp = 0.01,
+			a2_stp = 0.025,
+			thetas_stp = 0.2,
+			mu_stp = 0.35,
+			ngen = 100, 		# number of steps (2e6)
+			printfreq = 10,		# print progress (1000)
+			savefreq = 2e5,     # save out current state
+			samplefreq = 5,		# record current state for posterior (2000)
+			prefix = "CGW_1",   # filename prefix
+			continue=FALSE,
+			continuing.params=NULL)
+```
 
 
 ## Summary and wrap-up
