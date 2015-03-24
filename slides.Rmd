@@ -677,7 +677,7 @@ load("sim-data.Robj")
 MCMC(   counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
         D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,
         aD_stp = 0.5, aE_stp = 0.5, a2_stp = 0.02, thetas_stp = 0.2, mu_stp = 0.25,
-        ngen = 1e6,                # should take about 5.5 hours
+        ngen = 1e6,                # should take about 5.5 hours (on this machine)
         printfreq = 10000,         # no need to write out all the time
         savefreq = 1e5,            # save every 0.55 hours
         samplefreq = 250,          # as determined above
@@ -712,6 +712,17 @@ MCMC(   counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci)
 
 
 # Technical appendices
+
+## Computational speed
+
+Both BEDASSLE and PCA will slow down dramatically as the number of individuals grows.
+
+They mostly do lots of linear algebra;
+this is faster if you use all of your computer's processors, instead of just one.
+
+*Do* link R to multithreaded linear algebra libraries;
+[as described on this page](http://www.stat.cmu.edu/~nmv/2013/07/09/for-faster-r-use-openblas-instead-better-than-atlas-trivial-to-switch-to-on-ubuntu/).
+
 
 ## Trim linked SNPs and recode as numeric
 
