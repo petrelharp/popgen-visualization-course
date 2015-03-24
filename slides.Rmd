@@ -350,12 +350,14 @@ ${}^*$ *actually, Beta-Binomial, to allow for population-specific inbreeding coe
 ## Mathematical model
 
 -  The *allele frequency* at locus $\ell$ in population $k$ is
-    $$f_{\ell k} = \frac{1}{1+e^{-(\Theta_{\ell k}+\mu_\ell)}}$$
+
+    $f_{\ell k} = \frac{1}{1+e^{-(\Theta_{\ell k}+\mu_\ell)}}$
 
 -  where $\mu_\ell$ is the (transformed) global mean allele frequency
 
 -  and $\Theta$ are multivariate Gaussian deviations
-   $$\Theta_{\ell k} \sim N(0,\Omega)$$
+
+   $\Theta_{\ell k} \sim N(0,\Omega)$
 
 -  with covariance matrix $\Omega_{}$.
 
@@ -365,25 +367,29 @@ ${}^*$ *actually, Beta-Binomial, to allow for population-specific inbreeding coe
 ## BEDASSLE's model
 
 With 
-$$ D_{i,j} = \text{(geographic distance between samples $i$ and $j$)} $$
+
+$D_{i,j} = \text{(geographic distance between samples $i$ and $j$)}$
+
 and
-$$ E_{i,j} = \text{(environmental distance between samples $i$ and $j$)} $$
+
+$E_{i,j} = \text{(environmental distance between samples $i$ and $j$)}$
 
 we use the flexible parametric form
-$$ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 })^\alpha_2 } .$$
+
+$ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 }\right)^{\alpha_2} } .$
 
 
 ## and call it
 
 <div style="font-size: 200%;">
-    <span style="color:black; font-weight:bold;">B</span>ayesian <br/>
-    <span style="color:red; font-weight:bold;">E</span>stimation of  <br/>
-    <span style="color:orange; font-weight:bold;">D</span>ifferentiation in <br/>
-    <span style="color:yellow; font-weight:bold;">A</span>lleles by <br/>
-    <span style="color:green; font-weight:bold;">S</span>patial <br/>
-    <span style="color:blue; font-weight:bold;">S</span>tructure and <br/>
-    <span style="color:violet; font-weight:bold;">L</span>ocal <br/>
-    <span style="color:black; font-weight:bold;">E</span>cology
+<span style="color:black; font-weight:bold;">B</span>ayesian <br/>
+<span style="color:red; font-weight:bold;">E</span>stimation of  <br/>
+<span style="color:orange; font-weight:bold;">D</span>ifferentiation in <br/>
+<span style="color:yellow; font-weight:bold;">A</span>lleles by <br/>
+<span style="color:green; font-weight:bold;">S</span>patial <br/>
+<span style="color:blue; font-weight:bold;">S</span>tructure and <br/>
+<span style="color:violet; font-weight:bold;">L</span>ocal <br/>
+<span style="color:black; font-weight:bold;">E</span>cology
 </div>
 
 [Bradburd, Ralph & Coop 2013, *Evolution*](onlinelibrary.wiley.com/doi/10.1111/evo.12193)
@@ -394,11 +400,54 @@ $$ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_
 <img src="bedassle-logo.png" style="width: 90%; align: center;"/>
 </a>
 
+
 ## Lightning introduction to MCMC
 
-    -   acceptance rates
-    -   likelihood profile
-    -   mixing and stationarity
+**Markov chain Monte Carlo** is a class of algorithms for *parameter inference*:
+as applied here,
+
+**given**
+1.  some data
+2.  a generative model of that data (with a computable likelihood function)
+3.  prior distributions on the parameters of that model
+
+it **finds**
+1. samples from the posterior distribution on the parameters
+2. which lets you estimate the posterior distribution.
+
+Reminder:
+
+$\mathbb{P}(\text{parameters}\,|\,\text{data}) \propto mathbb{P}(\text{parameters}) mathbb{P}(\text{data}\,|\,\text{parameters})$ 
+
+
+Our goal is to *move around parameter space* in such a way that
+the *proportion of time* spent near some parameter combination
+is proprtional to the *posterior probability* of those parameters.
+
+## How MCMC works
+
+Two ingredients:
+
+1. proposal distribution ("where should I think about moving to?")
+2. acceptance probabilities ("hm, is moving there a good idea?")
+
+These are such that iterating (proposal, accept-or-reject) gives the desired distribution.
+*(e.g. the higher the posterior distribution at a proposed location, the more likely it is to move there)*
+
+**MCMC checklist:**
+
+1.  acceptance rates: should be around 20-40% for optimal efficiency;
+    increasing step size decreases acceptance rate
+1.  likelihood profile: increases at first, then levels off:
+    run longer if it's still increasing
+1.  mixing and stationarity: need to run it long enough that it *mixes*, 
+    i.e. samples the entire relevent set of parameters:
+    run longer if it hasn't "gone everywhere several times"
+    
+Tune on short runs; then do some longer ones.
+
+*Results:* the posterior distribution, summarized by marginals.
+
 
 ## Simulated data
 
@@ -410,6 +459,7 @@ sim <- sim_data(nind=nind,nloci=nloci,locs=locs,env=env,aE=2)
 layout(matrix(1:6,nrow=2))
 par(mar=c(2,2,2,1)+.1)
 plot(locs, col=1+env, pch=20, main='locations')
+abline(v=0.5)
 for (k in sample.int(nloci,5)) {
     plot( locs, col=c("blue","purple","red")[1+sim$genotypes[k,]], pch=20, main=paste("locus",k) )
 }
@@ -417,13 +467,14 @@ for (k in sample.int(nloci,5)) {
 
 ## Simulated data: IBDE
 
-```{r show_ibde, echo=1:7}
+```{r show_ibde, echo=1:5}
 covmat <- cov(sweep(sim$genotypes,1,rowMeans(sim$genotypes),"-"))
-D <- sqrt( outer( sim$locs[,1], sim$locs[,1], "-" )^2 + outer( sim$locs[,2], sim$locs[,2], "-" )^2 )
-E <- abs( outer( sim$env, sim$env, "-" ) )
+D <- fields::rdist(sim$locs)
+E <- fields::rdist(sim$env)
 genetic.dist <- matrix(NA,nrow=nind,ncol=nind)
 for (i in 1:nind) for (j in i:nind) {
-    genetic.dist[i,j] <- genetic.dist[j,i] <- sqrt(mean((sim$genotypes[,i]-sim$genotypes[,j])^2))
+    genetic.dist[i,j] <- sqrt(mean((sim$genotypes[,i]-sim$genotypes[,j])^2))
+    genetic.dist[j,i] <- genetic.dist[i,j] 
 }
 cols <- rainbow(16,start=4/6,end=0)
 ut <- upper.tri(D)
@@ -433,7 +484,7 @@ plot( D[ut], covmat[ut], col=ecols, main="covariance", pch=20, ylab='' )
 plot( D[ut], genetic.dist[ut], col=ecols, main="genetic distance", pch=20, ylab='' )
 ```
 
-## PCA on IBDE
+## PCA preview
 
 ```{r pca_on_ibde, echo=-1}
 labels <- order(order(cut(locs[,1],breaks=5),(locs[,2])))
@@ -445,7 +496,7 @@ tplot( locs, main="location", col=1+E )
 tplot( pca$vectors[,1:2], xlab="PC1", ylab="PC2", main="PC map", col=1+E )
 ```
 
-## PCA on IBDE
+## PCA preview
 
 ```{r pca_on_ibde_maps, echo=-1}
 layout(t(1:2))
@@ -458,39 +509,203 @@ tplot( locs, col=cols[cut(pca$vectors[,2],16)], pch=20, main="PC2" ); abline(v=0
 
 # Running BEDASSLE
 
+## Initiating an MCMC run
+
+```{r bedassle_setup, include=FALSE}
+dir.create("bedassle-ex/sim",showWarnings=FALSE,recursive=TRUE)
+require(BEDASSLE)
+```
+
 ```{r bedassle_run, cache=TRUE, depends="sim_ibde_data"}
-	require(BEDASSLE)
-	
-	#Initiate the MCMC analysis
-	MCMC_run <- MCMC(	
-            counts = t(sim$genotypes),
-			sample_sizes = matrix(2,nrow=nind,ncol=nloci),
-			D = D,  # geographic distances
-            E = E,  # environmental distances
-			k = nind, loci = nloci,  # dimensions of the data
-			delta = 0.0001,  # a small, positive, number
-			aD_stp = 0.01,   # step sizes for the MCMC
-			aE_stp = 0.01,
-			a2_stp = 0.025,
-			thetas_stp = 0.2,
-			mu_stp = 0.35,
-			ngen = 100, 		# number of steps (2e6)
-			printfreq = 10,		# print progress (1000)
-			savefreq = 2e5,     # save out current state
-			samplefreq = 5,		# record current state for posterior (2000)
-			prefix = "CGW_1",   # filename prefix
-			continue=FALSE,
-			continuing.params=NULL)
+MCMC(	
+        counts = t(sim$genotypes),
+        sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+        D = D,  # geographic distances
+        E = E,  # environmental distances
+        k = nind, loci = nloci,  # dimensions of the data
+        delta = 0.0001,  # a small, positive, number
+        aD_stp = 0.01,   # step sizes for the MCMC
+        aE_stp = 0.01,
+        a2_stp = 0.025,
+        thetas_stp = 0.2,
+        mu_stp = 0.35,
+        ngen = 1000, 		# number of steps (2e6)
+        printfreq = 10000,	# print progress (10000)
+        savefreq = 1000,     # save out current state
+        samplefreq = 5,		# record current state for posterior (2000)
+        prefix = "bedassle-ex/sim/CGW_1_",   # filename prefix
+        continue=FALSE,
+        continuing.params=NULL)
+```
+
+## Examining a run
+
+```{r init_as, echo=-1}
+layout(matrix(1:6,nrow=2)); par(mar=c(2,2,2,1)+.1)
+load("bedassle-ex/sim/CGW_1_MCMC_output1.Robj")
+plot(aD, xlab="MCMC generation", ylab="value", main="aD")
+plot(aD_accept/aD_moves, xlab="MCMC generation", ylab="acceptance rate", main="aD", ylim=c(0,1))
+plot(as.vector(aE), xlab="MCMC generation", ylab="value", main="aE")
+plot(aE_accept/aE_moves, xlab="MCMC generation", ylab="acceptance rate", main="aE", ylim=c(0,1))
+plot(a2, xlab="MCMC generation", ylab="value", main="a2")
+plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="acceptance rate", main="a2", ylim=c(0,1))
+```
+
+
+## Examining a run
+
+```{r init_other, echo=-1}
+layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
+plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="acceptance rate", main="mu", ylim=c(0,1) )
+plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="acceptance rate", main="thetas", ylim=c(0,1) )
+```
+
+## Adjusting the parameters
+
+```{r bedassle_run_continued, cache=TRUE, depends="bedassle_run"}
+make.continuing.params("bedassle-ex/sim/CGW_1_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_1_MCMC_final1.Robj")
+MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+        D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
+        aD_stp = 0.1,      # increased from 0.01
+        aE_stp = 0.1,      # increased from 0.01
+        a2_stp = 0.025,    # kept the same
+        thetas_stp = 0.2,  # kept the same
+        mu_stp = 0.35,     # kept the same
+        ngen = 1000, printfreq = 10000,	savefreq = 1000, samplefreq = 5,
+        prefix = "bedassle-ex/sim/CGW_2_",   # NEW filename prefix
+        continue=TRUE,                       # CONTINUE from previous run
+        continuing.params="bedassle-ex/sim/CGW_1_MCMC_final1.Robj")
+```
+
+
+## Examining, again
+
+```{r second_as, echo=FALSE}
+layout(matrix(1:6,nrow=2)); par(mar=c(2,2,2,1)+.1)
+load("bedassle-ex/sim/CGW_2_MCMC_output1.Robj")
+plot(aD, xlab="MCMC generation", ylab="value", main="aD")
+plot(aD_accept/aD_moves, xlab="MCMC generation", ylab="acceptance rate", main="aD", ylim=c(0,1))
+plot(as.vector(aE), xlab="MCMC generation", ylab="value", main="aE")
+plot(aE_accept/aE_moves, xlab="MCMC generation", ylab="acceptance rate", main="aE", ylim=c(0,1))
+plot(a2, xlab="MCMC generation", ylab="value", main="a2")
+plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="acceptance rate", main="a2", ylim=c(0,1))
+```
+
+
+## Examining, again
+
+```{r second_other, echo=FALSE}
+layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
+plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="acceptance rate", main="mu", ylim=c(0,1) )
+plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="acceptance rate", main="thetas", ylim=c(0,1) )
+```
+
+## Start again
+
+```{r bedassle_run_continued_2, cache=TRUE, depends="bedassle_run_continued"}
+make.continuing.params("bedassle-ex/sim/CGW_2_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_2_MCMC_final1.Robj")
+run.time <- system.time( MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+        D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
+        aD_stp = 0.5,      # increased from 0.1
+        aE_stp = 0.5,      # increased from 0.1
+        a2_stp = 0.02,    # decreased from 0.025
+        thetas_stp = 0.2,  # kept the same
+        mu_stp = 0.25,     # decreased from 0.35
+        ngen = 1000, printfreq = 10000,	savefreq = 1000, samplefreq = 5,
+        prefix = "bedassle-ex/sim/CGW_3_",   # NEW filename prefix
+        continue=TRUE,                       # CONTINUE from previous run
+        continuing.params="bedassle-ex/sim/CGW_2_MCMC_final1.Robj") )
+```
+
+
+## Examining, take three
+
+```{r third_as, echo=FALSE}
+layout(matrix(1:6,nrow=2)); par(mar=c(2,2,2,1)+.1)
+load("bedassle-ex/sim/CGW_3_MCMC_output1.Robj")
+plot(aD, xlab="MCMC generation", ylab="value", main="aD")
+plot(aD_accept/aD_moves, xlab="MCMC generation", ylab="acceptance rate", main="aD", ylim=c(0,1))
+plot(as.vector(aE), xlab="MCMC generation", ylab="value", main="aE")
+plot(aE_accept/aE_moves, xlab="MCMC generation", ylab="acceptance rate", main="aE", ylim=c(0,1))
+plot(a2, xlab="MCMC generation", ylab="value", main="a2")
+plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="acceptance rate", main="a2", ylim=c(0,1))
+```
+
+
+## Examining, take three
+
+```{r third_other, echo=FALSE}
+layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
+plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="acceptance rate", main="mu", ylim=c(0,1) )
+plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="acceptance rate", main="thetas", ylim=c(0,1) )
+```
+
+## Find a good sampling rate
+
+The *autocorrelation function* of the traces:
+correlation of parameter value as a function of number of intervening steps ("lag"):
+```{r acf}
+layout(matrix(1:4,nrow=2))
+acf(a0,lag.max=150)
+acf(a2,lag.max=150)
+acf(as.vector(aE),lag.max=150)
+acf(aD,lag.max=150)
+```
+
+**Result:** looks like sampling every $50 \times 5 = 250$ steps would be reasonable.
+
+
+## Looks good
+
+... so let's set up a longer run:
+```{r setup_longrun, cache=TRUE, depends="sim_ibde_data"}
+make.continuing.params("bedassle-ex/sim/CGW_3_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_3_MCMC_final1.Robj")
+save(sim, file="bedassle-ex/sim/sim-data.Robj")
+```
+
+The batch file:
+```{r batch_file, eval=FALSE}
+#!/usr/bin/Rscript
+library(BEDASSLE)
+load("bedassle-ex/sim/sim-data.Robj")
+MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+        D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
+        aD_stp = 0.5, aE_stp = 0.5, a2_stp = 0.02, thetas_stp = 0.2, mu_stp = 0.25, 
+        ngen = 1e6,                # should take 
+        printfreq = 10000,	       # no need to write out all the time
+        savefreq = 1e5,            # save every
+        samplefreq = 250,          # as determined above
+        prefix = "bedassle-ex/sim/CGW_4_",   # NEW filename prefix
+        continue=TRUE,                       # CONTINUE from previous run
+        continuing.params="bedassle-ex/sim/CGW_3_MCMC_final1.Robj")
 ```
 
 
 ## Summary and wrap-up
+
+**Spatial structure:**
+
+1.  Isolation by distance is driven by local migration and history;
+2.  it is not clear how to translate island model results to continuous geography.
+3.  First, look at the data.
+
 
 **PCA:**
 
 1.  Great for quick visualization,
 2.  but beware of over-interpretation,
 3.  as minor details are not stable, and major details might not be either.
+
+
+**BEDASSLE and family:**
+
+1.  Model-based, and closer to reality,
+2.  but not a *mechanistic* model.
+3.  Potentially much more information in the locus-specific *residuals*.
+
 
 
 # Technical appendices
