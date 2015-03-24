@@ -649,10 +649,11 @@ The *autocorrelation function* of the traces:
 correlation of parameter value as a function of number of intervening steps ("lag"):
 ```{r acf}
 layout(matrix(1:4,nrow=2))
-acf(a0,lag.max=150)
-acf(a2,lag.max=150)
-acf(as.vector(aE),lag.max=150)
-acf(aD,lag.max=150)
+par(mar=c(2,2,2,1)+.1)
+acf(a0,lag.max=150,xlab='',ylab='')
+acf(a2,lag.max=150,xlab='',ylab='')
+acf(as.vector(aE),lag.max=150,xlab='',ylab='')
+acf(aD,lag.max=150,xlab='',ylab='')
 ```
 
 **Result:** looks like sampling every $50 \times 5 = 250$ steps would be reasonable.
@@ -660,27 +661,29 @@ acf(aD,lag.max=150)
 
 ## Looks good
 
+$1000 \times 5$ iterations took `r run.time["user.self"]` seconds
 ... so let's set up a longer run:
 ```{r setup_longrun, cache=TRUE, depends="sim_ibde_data"}
 make.continuing.params("bedassle-ex/sim/CGW_3_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_3_MCMC_final1.Robj")
 save(sim, file="bedassle-ex/sim/sim-data.Robj")
 ```
 
-The batch file:
+Create this file, and run it (in the background, with `Rscript`):
 ```{r batch_file, eval=FALSE}
 #!/usr/bin/Rscript
 library(BEDASSLE)
-load("bedassle-ex/sim/sim-data.Robj")
-MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
-        D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
-        aD_stp = 0.5, aE_stp = 0.5, a2_stp = 0.02, thetas_stp = 0.2, mu_stp = 0.25, 
-        ngen = 1e6,                # should take 
-        printfreq = 10000,	       # no need to write out all the time
-        savefreq = 1e5,            # save every
+setwd("bedassle-ex/sim")
+load("sim-data.Robj")
+MCMC(   counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
+        D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,
+        aD_stp = 0.5, aE_stp = 0.5, a2_stp = 0.02, thetas_stp = 0.2, mu_stp = 0.25,
+        ngen = 1e6,                # should take about 5.5 hours
+        printfreq = 10000,         # no need to write out all the time
+        savefreq = 1e5,            # save every 0.55 hours
         samplefreq = 250,          # as determined above
-        prefix = "bedassle-ex/sim/CGW_4_",   # NEW filename prefix
+        prefix = "CGW_4_",   # NEW filename prefix
         continue=TRUE,                       # CONTINUE from previous run
-        continuing.params="bedassle-ex/sim/CGW_3_MCMC_final1.Robj")
+        continuing.params="CGW_3_MCMC_final1.Robj")
 ```
 
 
