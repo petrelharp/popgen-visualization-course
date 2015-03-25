@@ -68,10 +68,9 @@ country.abbrev.list <- do.call( rbind, list(
 countryabbrevs <- country.abbrev.list[ match(levels(indivinfo$COUNTRY_SELF),country.abbrev.list[,1]), 2 ]
 names(countryabbrevs) <- levels(indivinfo$COUNTRY_SELF)
 
-plot.pca <- function (xy,pcs=1:2,clabs=c(names(nsamples)[nsamples>10]),info=indivinfo) {
+plot.pca <- function (xy,pcs=1:2,clabs=c(names(nsamples)[nsamples>10]),info=indivinfo,...) {
     countries <- with(info, levels(COUNTRY_SELF)[as.numeric(COUNTRY_SELF)] )
-    pairs( xy[,pcs], col=adjustcolor(countrycols[countries],.5), pch=20, cex=1, 
-        panel=function(x,y,...) {
+    plotfn <- function(x,y,...) {
             points( x, y, ... )
             mean.pca <- cbind(
                     tapply( x, info$COUNTRY_SELF, mean ),
@@ -79,6 +78,12 @@ plot.pca <- function (xy,pcs=1:2,clabs=c(names(nsamples)[nsamples>10]),info=indi
                 )[clabs,]
             points( mean.pca, col=adjustcolor(countrycols[rownames(mean.pca)],.45), pch=20, cex=5 )
             text( mean.pca, labels=countryabbrevs[rownames(mean.pca)], )
-        } )
+        } 
+    if (length(pcs==2)) { 
+        plot(xy[,pcs],type='n',xlab=paste("PC",pcs[1]),ylab=paste("PC",pcs[2]),...)
+        plotfn(xy[,pcs[1]],xy[,pcs[2]],col=adjustcolor(countrycols[countries],.5), pch=20, cex=1, ... )
+    } else { 
+        pairs( xy[,pcs], col=adjustcolor(countrycols[countries],.5), pch=20, cex=1, panel=plotfn, ... )
+    }
 }
 

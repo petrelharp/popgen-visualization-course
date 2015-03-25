@@ -159,3 +159,13 @@ write.table(cprod,file="crossprod_chr8.tsv",sep="\t",row.names=TRUE)
 cprod <- as.matrix(read.csv("orig_data/crossprod_all-covariance.csv",row.names=1,check.names=FALSE))
 rownames(cprod) <- colnames(cprod) <- indivinfo$SUBJID[match(indivinfo$ORIG_ID,rownames(cprod))]
 write.table(cprod,file="crossprod_all-covariance.tsv",sep="\t",row.names=TRUE)
+
+# and save out pre-normalized versions
+covmat <- as.matrix(read.table("crossprod_all-covariance.tsv",row.names=1,check.names=FALSE))
+nmat <- diag(nrow(covmat)) - matrix(1/nrow(covmat),nrow=nrow(covmat),ncol=ncol(covmat))
+write.table(( nmat %*% covmat %*% nmat ),file="crossprod_all-covariance-normalized.tsv",sep="\t",row.names=TRUE)
+
+covmat <- as.matrix(read.table("orig_data/crossprod_chr8-covariance.csv",row.names=1,check.names=FALSE))
+rownames(cprod) <- colnames(cprod) <- indivinfo$SUBJID[match(indivinfo$ORIG_ID,rownames(cprod))]
+nmat <- diag(nrow(covmat)) - matrix(1/nrow(covmat),nrow=nrow(covmat),ncol=ncol(covmat))
+write.table(( nmat %*% covmat %*% nmat ),file="crossprod_chr8-covariance-normalized.tsv",sep="\t",row.names=TRUE)

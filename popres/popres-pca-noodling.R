@@ -57,7 +57,7 @@ plot.pca(wncov.eigen$vectors, pcs=1:3)
 
 # weighted, normalized-weighted
 nwmat <- diag(nrow(covmat)) - weightings[col(covmat)]
-wnwcov.eigen <- eigen(nmat%*%covmat%*%t(nmat))
+wnwcov.eigen <- eigen(nmat%*%covmat%*%t(nmat) * outer(weightings,weightings,"*") )
 
 plot.pca(wnwcov.eigen$vectors, pcs=1:3)
 
@@ -70,3 +70,11 @@ sub.nmat <- diag(nrow(sub.cprod)) - matrix(1/nrow(sub.cprod),nrow=nrow(sub.cprod
 sub.eigen <- eigen( sub.nmat %*% sub.cprod %*% sub.nmat )
 
 plot.pca( sub.eigen$vectors, pcs=1:3, info=indivinfo[sub.inds,] )
+
+# or, cheap version:
+cheap.eigen <- eigen( (nmat%*%covmat%*%nmat)[sub.inds,sub.inds] )
+
+plot.pca( cheap.eigen$vectors, pcs=1:3, info=indivinfo[sub.inds,] )
+
+
+

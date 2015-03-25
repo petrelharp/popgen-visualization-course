@@ -1,0 +1,48 @@
+---
+title: "Example: PCA on the POPRES"
+author: Peter Ralph
+date: March 25, 2015
+---
+
+Read in helper functions:
+```{r setup}
+source("indivinfo.R")
+```
+
+Do unweighted, plain-vanilla PCA:
+```{r unweighted}
+covmat <- as.matrix(read.table("crossprod_all-covariance-normalized.tsv",row.names=1,check.names=FALSE))
+covmat.eigen <- eigen(covmat)
+plot.pca(covmat.eigen$vectors, pcs=1:3)
+```
+
+Now, subset the matrix so that there are at most 10 (randomly chosen) representatives per country:
+```{r downsampled}
+do.these <- unlist( tapply(1:nrow(indivinfo),indivinfo$COUNTRY_SELF, function (x) {
+            if (length(x)>10) { sample(x,10) } else { x }
+        } ) )
+downsampled.eigen <- eigen(covmat[do.these,do.these])
+plot.pca(downsampled.eigen$vectors, pcs=1:3, info=indivinfo[do.these,])
+```
+
+Better is to keep everyone in, but downweight:
+```{r downweighted}
+weightings <- 1/pmax(10,sqrt( nsamples[indivinfo$COUNTRY_SELF] ))
+weighted.covmat.eigen <- eigen( covmat * weightings[row(covmat)] * weightings[col(covmat)] )
+countrycols["Swiss German"] <- "black"
+countrycols["Swiss French"] <- "green"
+plot.pca(weighted.covmat.eigen$vectors, pcs=1:3)
+```
+
+Now let's look at a subset of the individuals; just the Swiss:
+```{r swiss}
+sub.inds <- grepl("(Swiss)|(Switzer)",indivinfo$COUNTRY_SELF)
+sub.eigen <- eigen(covmat[sub.inds,sub.inds])
+plot.pca(sub.eigen$vectors,pcs=1:3,info=indivinfo[sub.inds,])
+# compare to with everyone in
+layout(t(1:2))
+plot.pca(sub.eigen$vectors,pcs=1:2,info=indivinfo[sub.inds,])
+plot.pca(weighted.covmat.eigen$vectors,pcs=1:2,
+    xlim=range(weighted.covmat.eigen$vectors[sub.inds,1]),
+    ylim=range(weighted.covmat.eigen$vectors[sub.inds,2]))
+```
