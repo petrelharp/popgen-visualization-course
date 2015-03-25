@@ -671,7 +671,7 @@ plot(a2, main="a2 trace"); plot(a2_accept/a2_moves, main="a2 acceptance", ylim=c
 
 ```{r init_other, echo=-1}
 layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
-plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(Prob, xlab="MCMC generation", main="log likelihood")
 plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="", main="mu acceptance", ylim=c(0,1) )
 plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="", main="thetas acceptance", ylim=c(0,1) )
 ```
@@ -712,7 +712,7 @@ plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="", main="a2 acceptance", 
 
 ```{r second_other, echo=FALSE}
 layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
-plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(Prob, xlab="MCMC generation", main="log likelihood")
 plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="", main="mu acceptance", ylim=c(0,1) )
 plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="", main="thetas acceptance", ylim=c(0,1) )
 ```
@@ -754,7 +754,7 @@ plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="", main="a2 acceptance", 
 Ooops: step it back
 ```{r third_other, echo=FALSE}
 layout(matrix(1:3,nrow=1)); par(mar=c(2,2,2,1)+.1)
-plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(Prob, xlab="MCMC generation", main="log likelihood")
 plot(mu_accept/mu_moves, xlab="MCMC generation", ylab="", main="mu acceptance", ylim=c(0,1) )
 plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="", main="thetas acceptance", ylim=c(0,1) )
 ```
