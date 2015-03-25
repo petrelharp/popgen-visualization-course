@@ -30,7 +30,7 @@ plot(a2_accept/a2_moves, xlab="MCMC generation", ylab="", main="a2 acceptance", 
 
 And, the log-likelihood trace:
 ```{r loglikelihood}
-plot(-Prob, xlab="MCMC generation", main="log likelihood")
+plot(Prob, xlab="MCMC generation", main="log likelihood")
 ```
 and mean acceptance rates for the allele-specific global mean ($\mu$) and population mean ($\Theta$) parameters:
 ```{r other_params}
