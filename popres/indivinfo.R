@@ -68,7 +68,7 @@ country.abbrev.list <- do.call( rbind, list(
 countryabbrevs <- country.abbrev.list[ match(levels(indivinfo$COUNTRY_SELF),country.abbrev.list[,1]), 2 ]
 names(countryabbrevs) <- levels(indivinfo$COUNTRY_SELF)
 
-plot.pca <- function (xy,pcs=2:1,clabs=c(names(nsamples)[nsamples>10]),info=indivinfo) {
+plot.pca <- function (xy,pcs=1:2,clabs=c(names(nsamples)[nsamples>10]),info=indivinfo) {
     countries <- with(info, levels(COUNTRY_SELF)[as.numeric(COUNTRY_SELF)] )
     pairs( xy[,pcs], col=adjustcolor(countrycols[countries],.5), pch=20, cex=1, 
         panel=function(x,y,...) {
