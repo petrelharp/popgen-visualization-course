@@ -1,0 +1,16 @@
+CGW-data.tar.gz
+backup/
+bedassle-ex/CGW_1Initial.parameters.Robj
+bedassle-ex/hgdp-ex/
+bedassle-ex/sim/
+bedassle-ex/teosinte/
+gideon/
+popres/crossprod_all-covariance-normalized.tsv
+popres/crossprod_all-covariance.tsv
+popres/crossprod_all.tsv
+popres/crossprod_chr8-covariance-normalized.tsv
+popres/crossprod_chr8.tsv
+popres/orig_data/
+slides_cache/
+slides_cache_backup/
+slides_files/

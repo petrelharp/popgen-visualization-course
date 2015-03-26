@@ -41,6 +41,7 @@ How to look at millions of loci (/variables/dimensions)?
 
 
 **Overview:**
+
 1. examples from the literature
 2. how to do it: overview
 3. properties of PCA
@@ -83,10 +84,10 @@ pander(t(simdata$alleles))
 
 ## First: change letters to numbers.
 
-Translate alleles to "number of reference alleles":
+Translate alleles to "proportion of reference alleles":
 
 ```{r numeric_data, echo=FALSE}
-pander(t(simdata$genotypes))
+pander(t(simdata$genotypes)/2)
 ```
 
 *note:* arbitrary choice of "reference" allele.
@@ -301,7 +302,7 @@ Offspring tend to live near to their parents, and so neighbors tend to
 -  i.e. have fewer generations separting them from their common ancestors,
 -  i.e. have more similar genomes.
 
-<img src="tort-sampling-locations.png" style="width: 60%;" alt="tortoise sampling locations" />
+<img src="tort-sampling-locations.png" style="width: 100%;" alt="tortoise sampling locations" />
 
 
 ## "Isolation by distance" | correlation of genetic and geographic distances
@@ -330,12 +331,12 @@ a tendency counteracted by migration.
 
 ## Isolation by *
 
-<img src="wang-bradburd-ibde.png" style="width: 100%"/>
+<img src="wang-bradburd-ibde.png" style="width: 80%"/>
 <!-- ![Wang & Bradburd 2014](wang-bradburd-ibde.png) -->
 [Wang & Bradburd](http://onlinelibrary.wiley.com/doi/10.1111/mec.12938/abstract)
 
 
-## To study IBE we have to account for IBD {.columns-2}
+## To study IBE we must account for IBD {.columns-2}
 
 <img src="whitesands-transition.png" style="width: 100%"/>
 <img src="whitesands-lizards.png" style="width: 100%"/>
@@ -374,6 +375,8 @@ Gaussian process:
 **This means:** a continuous-space model of correlated allele frequencies
 reduces to a covariance matrix.
 
+## Simulated Gaussian field
+
 ```{r ex_gaussian_field, cache=TRUE}
 covfn <- function (s,t) { exp(-sqrt(sum((s-t)^2))) }
 st <- expand.grid( s=(0:30)/30, t=(0:30)/30 )
@@ -395,7 +398,7 @@ Matrix::image(Matrix::Matrix(X))
 
 -  The sampled alleles are independent${}^*$ draws from these frequencies.
 
-**But:** need to trasnform from $(-\infty,\infty)$ (Gaussians) to $[0,1]$ (frequencies).
+**But:** need to transform from $(-\infty,\infty)$ (Gaussians) to $[0,1]$ (frequencies).
 
 
 ${}^*$ *actually, Beta-Binomial, to allow for population-specific inbreeding coefficients.*
@@ -417,8 +420,6 @@ ${}^*$ *actually, Beta-Binomial, to allow for population-specific inbreeding coe
 -  with covariance matrix $\Omega_{}$.
 
 
-# Using BEDASSLE
-
 ## A parametric model:
 
 With 
@@ -431,7 +432,7 @@ $E_{i,j} = \text{(environmental distance between samples *i* and *j*)}$
 
 we use the flexible parametric form
 
-$ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 }\right)^{\alpha_2} } .$
+$\Omega_{i,j} = \frac{1}{\alpha_0} e^{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 }\right)^{\alpha_2} }.$
 
 
 ## we call this model
@@ -456,6 +457,9 @@ $ \Omega_{i,j} = \frac{1}{\alpha_0} e^{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_
 </a>
 
 
+# Using BEDASSLE
+
+
 ## Method mechanics: input
 
 1.  Sampled populations (*or* individuals)
@@ -476,7 +480,12 @@ The main focus is to infer $\alpha_E/\alpha_D$.
 
 We do this by putting priors on the parameters,
 and finding the posterior with MCMC.
-**Note:** BEDASSLE also estimates posterior densities for *allele-specific* $\mu$ and $\Theta$ parameters.
+
+- $\alpha_D$ : contribution of geographic distance
+- $\alpha_{E,i}$ : contribution of eco/enviromental distance $i$
+- $\alpha_0$, $\alpha_2$ : scaling parameters
+- $\Phi_k$ : population-specific "inbreeding coefficients"
+- $\mu_\ell$, $\Theta_{k,\ell}$ : allele-specific transformed frequencies
 
 
 ## Lightning introduction to MCMC
