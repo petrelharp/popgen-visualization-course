@@ -168,14 +168,14 @@ give the best $k$-dimensional approximation
 to the simliarity matrix: with eigenvalues $\lambda_i$,
 eigenvectors $v_i$, and similiarity matrix $\Sigma$:
 
-$  \Sigma \approx \sum_{i=1}^k \lambda_i v_i v_i^T $
+$\Sigma \approx \sum_{i=1}^k \lambda_i v_i v_i^T$
 
 More is true: if $\tilde G$ is the matrix of genotypes,
 with row and column means subtracted off,
 then there are vectors of *allele weights* $w_i$
 so that
 
-$  \tilde G \approx \sum_{i=1}^k \sqrt{\lambda_i} w_i v_i^T .$
+$\tilde G \approx \sum_{i=1}^k \sqrt{\lambda_i} w_i v_i^T .$
 
 Another consequence: the PCs can be expressed as weighted sums of the genotypes.
 (**so:** admixed individuals show up intermediate to parentals)
@@ -286,6 +286,7 @@ Your tasks:
 
 <a href="http://en.wikipedia.org/wiki/Macquarie_Island"><img src="macquarie-island-royal-penguins.jpg" style="width: 80%;"/></a>
 <!-- ![Macquarie Island, Royal Penguins](macquarie-island-royal-penguins.jpg) -->
+
 [*wikipedia:M. Murphy*](http://en.wikipedia.org/wiki/Macquarie_Island#/media/File:RoyalPenguins4.JPG)
 
 
@@ -333,6 +334,7 @@ a tendency counteracted by migration.
 
 <img src="wang-bradburd-ibde.png" style="width: 80%"/>
 <!-- ![Wang & Bradburd 2014](wang-bradburd-ibde.png) -->
+
 [Wang & Bradburd](http://onlinelibrary.wiley.com/doi/10.1111/mec.12938/abstract)
 
 
@@ -377,7 +379,7 @@ reduces to a covariance matrix.
 
 ## Simulated Gaussian field
 
-```{r ex_gaussian_field, cache=TRUE}
+```{r ex_gaussian_field, cache=TRUE, echo=1:6}
 covfn <- function (s,t) { exp(-sqrt(sum((s-t)^2))) }
 st <- expand.grid( s=(0:30)/30, t=(0:30)/30 )
 covmat <- diag(nrow(st))
@@ -432,7 +434,7 @@ $E_{i,j} = \text{(environmental distance between samples *i* and *j*)}$
 
 we use the flexible parametric form
 
-$\Omega_{i,j} = \frac{1}{\alpha_0} e^{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 }\right)^{\alpha_2} }.$
+$\Omega_{i,j} = \frac{1}{\alpha_0} \exp\left\{-\left(\sqrt{ \alpha_D D_{ij}^2 + \alpha_E E_{ij}^2 }\right)^{\alpha_2} \right\}.$
 
 
 ## we call this model
@@ -538,7 +540,7 @@ Tune on short runs; then do some longer ones.
 *Results:* the posterior distribution, summarized by marginals.
 
 
-## Empirical example: altitude adaptation in maize?
+## Empirical example: teosinte
 
 <img src="teosinte-map.png" style="width: 100%">
 **data: J Ross-Ibarra**
@@ -551,12 +553,12 @@ Tune on short runs; then do some longer ones.
 
 **Is teosinte locally adapted to altitude?**
 
-## Empirical example: altitude adaptation in maize?
+## Empirical example: teosinte
 
 <img src="teosinte-Fst-colE.png" style="width: 100%">
 **data: J Ross-Ibarra**
 
-## Empirical example: altitude adaptation in maize?
+## Empirical example: teosinte
 
 Trace plots from the MCMC:
 <img src="teosinte-trace-plots-cropped.png" style="width: 100%">
@@ -585,21 +587,18 @@ for (k in sample.int(nloci,5)) {
 
 ## Simulated data: IBDE
 
-```{r show_ibde, echo=1:5}
+```{r show_ibde, echo=1:4}
 covmat <- cov(sweep(sim$genotypes,1,rowMeans(sim$genotypes),"-"))
 D <- fields::rdist(sim$locs)
 E <- fields::rdist(sim$env)
-genetic.dist <- matrix(NA,nrow=nind,ncol=nind)
-for (i in 1:nind) for (j in i:nind) {
-    genetic.dist[i,j] <- sqrt(mean((sim$genotypes[,i]-sim$genotypes[,j])^2))
-    genetic.dist[j,i] <- genetic.dist[i,j] 
-}
+genetic.dist <- fields::rdist(t(sim$genotypes))/nloci
 cols <- rainbow(16,start=4/6,end=0)
 ut <- upper.tri(D)
 ecols <- adjustcolor(cols,.5)[cut(E[ut],breaks=16)]
 layout(t(1:2))
-plot( D[ut], covmat[ut], col=ecols, main="covariance", pch=20, ylab='' )
-plot( D[ut], genetic.dist[ut], col=ecols, main="genetic distance", pch=20, ylab='' )
+par(mar=c(5,4,2,1)+.1,mgp=c(3,1,0))
+plot( D[ut], covmat[ut], col=ecols, main="covariance", pch=20, ylab='covariance', xlab='geographic distance' )
+plot( D[ut], genetic.dist[ut], col=ecols, main="genetic distance", pch=20, ylab='genetic distance', xlab='geographic distance' )
 ```
 
 ## PCA preview
@@ -804,10 +803,10 @@ load("sim-data.Robj")
 MCMC(   counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=ncol(sim$genotypes),ncol=nrow(sim$genotypes)),
         D = D,  E = E,  k = ncol(sim$genotypes), loci = nrow(sim$genotypes),  delta = 0.0001,
         aD_stp = 0.1, aE_stp = 0.1, a2_stp = 0.02, thetas_stp = 0.2, mu_stp = 0.25,
-        ngen = 1e6,                # should take about 5.5 hours (on this machine)
+        ngen = 1e6,                # should take about 2.3 hours (on this machine)
         printfreq = 10000,         # no need to write out all the time
-        savefreq = 1e5,            # save every 0.55 hours
-        samplefreq = 250,          # as determined above
+        savefreq = 1e5,            # save every 0.23 hours
+        samplefreq = 250,          # as determined from acf plots
         prefix = "CGW_4_",   # NEW filename prefix
         continue=TRUE,                       # CONTINUE from previous run
         continuing.params="CGW_3_MCMC_final1.Robj")
@@ -822,7 +821,11 @@ Suggestions:
 1. look at the run
 2. start a new (short!) run from this starting point
 
-To cheat, look at `bedassle-ex/view-bedassle-sim.Rmd`.
+For results, look at 
+
+- [bedassle-ex/view-bedassle-sim.Rmd](bedassle-ex/view-bedassle-sim.Rmd).
+- [bedassle-ex/view-bedassle-hgdp.Rmd](bedassle-ex/view-bedassle-hgdp.Rmd).
+- [bedassle-ex/view-bedassle-teosinte.Rmd](bedassle-ex/view-bedassle-teosinte.Rmd).
 
 
 ## Summary and wrap-up
