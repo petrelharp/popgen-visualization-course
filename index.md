@@ -3,6 +3,8 @@ Visualizing geographic structure and demographic history: (very) short course
 
 This is the material for a short (3 hour) course I taught at the UCLA/La Kretz Workshop in Conservation Genomics, 22-27 March, 2015.
 
+To see the slides directly, go to [the github-pages site](http://petrelharp.github.io/popgen-visualization-course/)
+
 
 *Goals/skills:* 
 
