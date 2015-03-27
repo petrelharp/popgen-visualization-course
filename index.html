@@ -1,0 +1,88 @@
+<h1 id="visualizing-geographic-structure-and-demographic-history-very-short-course">Visualizing geographic structure and demographic history: (very) short course</h1>
+<p>This is the material for a short (3 hour) course I taught at the UCLA/La Kretz Workshop in Conservation Genomics, 22-27 March, 2015.</p>
+<p><em>Goals/skills:</em></p>
+<ol style="list-style-type: decimal">
+<li>Describe different causes and patterns of population structure.</li>
+<li>Use principal components analysis (PCA) to visualize population structure.</li>
+<li>Use BEDASSLE to fit models of isolation by distance and/or environment.</li>
+</ol>
+<p><em>Incidental skills:</em></p>
+<ol style="list-style-type: decimal">
+<li>Interpreting the output of a Markov chain Monte Carlo (MCMC) algorithm.</li>
+</ol>
+<p><em>Prerequisites:</em></p>
+<ol style="list-style-type: decimal">
+<li>Install R</li>
+<li><p>and the R package BEDASSLE:</p>
+<pre><code>install.packages(&quot;BEDASSLE&quot;)</code></pre></li>
+</ol>
+<p>To get the data used in the examples, download and uncompress <a href="http://phoebe.usc.edu/CGW/CGW-data.tar.gz">this tarball</a> to the folder you've put this git repository in.</p>
+<h2 id="in-this-repository">In this repository</h2>
+<ol style="list-style-type: decimal">
+<li><a href="slides.html">The presentation.</a></li>
+<li><a href="popres/popres-pca.html">Example of running PCA on some data.</a></li>
+<li><a href="bedassle-ex/view-bedassle-sim.html">Example of running BEDASSLE on some simulated data.</a></li>
+<li>Example of running BEDASSLE on two real datasets: <a href="bedassle-ex/view-bedassle-teosinte.html">teosinte</a> and the <a href="bedassle-ex/view-bedassle-hgdp.html">HGDP</a>.</li>
+</ol>
+<p>Each of the above html files are made from the corresponding Rmd files of the same name; you can read the source code to see what happens behind the scenes when the R code isn't in the presentation.</p>
+<h2 id="outline">Outline</h2>
+<ol style="list-style-type: decimal">
+<li>PCA and visualization (45min)
+<ul>
+<li>Goal: low-dimensional summary.</li>
+<li>In practice: examples from the literature</li>
+<li>Properties of PCA
+<ul>
+<li>direction of maximum variation: weights on alleles</li>
+<li>decomposition of variance</li>
+<li>matrix decompositions</li>
+<li>spatial structure and Fourier modes</li>
+</ul></li>
+<li>Technical issues
+<ul>
+<li>normalization</li>
+<li>weighting and sample sizes</li>
+<li>correlated markers</li>
+</ul></li>
+</ul></li>
+<li>Doing PCA: hands-on (45min)
+<ul>
+<li>Three populations, simulated
+<ul>
+<li>computing the covariance matrix</li>
+<li>PCA</li>
+</ul></li>
+<li>POPRES (as in http://www.ncbi.nlm.nih.gov/pubmed/18758442)
+<ul>
+<li>covariance matrix provided</li>
+<li>downweighting populations</li>
+<li>subsets of the genome</li>
+</ul></li>
+</ul></li>
+<li>Continuous geography (45min)
+<ul>
+<li>Nearby things are more similar than distant ones
+<ul>
+<li>... because they are more closely related.</li>
+<li>Migration, coalescence, covariance, and genetic distance.</li>
+</ul></li>
+<li>Isolation by distance/environment/ecology/etcetera
+<ul>
+<li>resistance distance</li>
+</ul></li>
+<li>Phenomenological model: correlated allele frequencies</li>
+</ul></li>
+<li>Using BEDASSLE (45min)
+<ul>
+<li>BEDASSLE's parameterization</li>
+<li>Lightning introduction to MCMC
+<ul>
+<li>acceptance rates</li>
+<li>likelihood profile</li>
+<li>mixing and stationarity</li>
+</ul></li>
+<li>Simulated data</li>
+</ul></li>
+</ol>
+<h2 id="license-and-reuse">License and reuse</h2>
+<p><a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/"><img alt="Creative Commons License" style="border-width:0" src="https://i.creativecommons.org/l/by-sa/4.0/88x31.png" /></a><br />This work, including the code and <a href="slides.html">presentation</a>, is licensed under a <a rel="license" href="http://creativecommons.org/licenses/by-sa/4.0/">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
