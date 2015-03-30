@@ -79,7 +79,7 @@ plot.pca <- function (xy,pcs=1:2,clabs=c(names(nsamples)[nsamples>10]),info=indi
             points( mean.pca, col=adjustcolor(countrycols[rownames(mean.pca)],.45), pch=20, cex=5 )
             text( mean.pca, labels=countryabbrevs[rownames(mean.pca)], )
         } 
-    if (length(pcs==2)) { 
+    if (length(pcs)==2) { 
         plot(xy[,pcs],type='n',xlab=paste("PC",pcs[1]),ylab=paste("PC",pcs[2]),...)
         plotfn(xy[,pcs[1]],xy[,pcs[2]],col=adjustcolor(countrycols[countries],.5), pch=20, cex=1, ... )
     } else { 
