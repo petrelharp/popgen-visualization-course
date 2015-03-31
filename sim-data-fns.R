@@ -22,6 +22,7 @@ sim_data <- function (nind, nloci, do.alleles=TRUE,
         sep="/" ), nrow=nloci ) } else { NULL }
     colnames(alleles) <- colnames(genotypes) <- rownames(locs) <- indivs
     rownames(alleles) <- rownames(genotypes) <- snps
-    return( list( locs=locs, env=env, covmat=covmat, genotypes=genotypes, alleles=alleles, 
-            params=list(a0=a0,aD=aD,aE=aE,a2=a2,nugget=nugget) ) )
+    return( list( locs=locs, env=env, covmat=covmat, 
+                    freqs=freqs, genotypes=genotypes, alleles=alleles, 
+                params=list(a0=a0,aD=aD,aE=aE,a2=a2,nugget=nugget) ) )
 }
