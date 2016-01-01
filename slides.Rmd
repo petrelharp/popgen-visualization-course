@@ -223,7 +223,7 @@ plot( simdata$locs, col=cols, pch=pchs, main="sampling scheme" )
 
 ## PCA on simulated data:
 
-```{r sim_pca, cache=TRUE, depends="sim_data"}
+```{r sim_pca, cache=TRUE, dependson="sim_data"}
 norm.genotypes <- sweep( simdata$genotypes, 1, rowMeans(simdata$genotypes), "-" )
 covmat <- cov(norm.genotypes)
 pca <- eigen(covmat)
@@ -643,7 +643,7 @@ dir.create("bedassle-ex/sim",showWarnings=FALSE,recursive=TRUE)
 require(BEDASSLE)
 ```
 
-```{r bedassle_run, cache=TRUE, depends="sim_ibde_data"}
+```{r bedassle_run, cache=TRUE, dependson="sim_ibde_data"}
 MCMC(	
         counts = t(sim$genotypes),
         sample_sizes = matrix(2,nrow=nind,ncol=nloci),
@@ -687,7 +687,7 @@ plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="", main="thetas a
 
 ## Adjusting the parameters
 
-```{r bedassle_run_continued, cache=TRUE, depends="bedassle_run"}
+```{r bedassle_run_continued, cache=TRUE, dependson="bedassle_run"}
 make.continuing.params("bedassle-ex/sim/CGW_1_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_1_MCMC_final1.Robj")
 MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
         D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
@@ -728,7 +728,7 @@ plot(thetas_accept/thetas_moves, xlab="MCMC generation", ylab="", main="thetas a
 
 ## Start again
 
-```{r bedassle_run_continued_2, cache=TRUE, depends="bedassle_run_continued"}
+```{r bedassle_run_continued_2, cache=TRUE, dependson="bedassle_run_continued"}
 make.continuing.params("bedassle-ex/sim/CGW_2_MCMC_output1.Robj",file.name="bedassle-ex/sim/CGW_2_MCMC_final1.Robj")
 run.time <- system.time( MCMC(	counts = t(sim$genotypes), sample_sizes = matrix(2,nrow=nind,ncol=nloci),
         D = D,  E = E,  k = nind, loci = nloci,  delta = 0.0001,  
@@ -788,7 +788,7 @@ acf(aD,lag.max=150,xlab='',ylab='')
 
 $1000 \times 5$ iterations took `r run.time["user.self"]` seconds
 ... so let's set up a longer run:
-```{r setup_longrun, cache=TRUE, depends="sim_ibde_data"}
+```{r setup_longrun, cache=TRUE, dependson="sim_ibde_data"}
 make.continuing.params("bedassle-ex/sim/CGW_3_MCMC_output1.Robj",
         file.name="bedassle-ex/sim/CGW_3_MCMC_final1.Robj")
 save(sim, D, E, file="bedassle-ex/sim/sim-data.Robj")
