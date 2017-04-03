@@ -24,7 +24,7 @@ To see the slides directly, go to [the github-pages site](http://petrelharp.gith
 install.packages("BEDASSLE")
 ```
 
-To get the data used in the examples, download and uncompress [this tarball](http://phoebe.usc.edu/CGW/CGW-data.tar.gz) to the folder you've put this git repository in.
+To get the data used in the examples, download and uncompress [this tarball](http://phoebe.uoregon.edu/CGW/CGW-data.tar.gz) to the folder you've put this git repository in.
 
 
 In this repository
